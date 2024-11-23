@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +11,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     
     // Basic validation
@@ -18,11 +19,13 @@ const Login = () => {
       setError('Please enter both email and password');
       return;
     }
-
-    // Simulated login logic
-    if (email === 'user@example.com' && password === 'password123') {
-      // Successful login
-      navigate('/dashboard');
+    const response=await axios.post("http://localhost:8000/api/auth/login",{email,password});
+    const { message, _id, username, email_id, token } = response.data;
+    alert(response.data.message);
+    if (response.data.message==="login sucessful") {
+      sessionStorage.setItem('user', JSON.stringify({ _id, username, email_id }));
+      sessionStorage.setItem('token', token);
+      navigate('/chat');
     } else {
       setError('Invalid email or password');
     }

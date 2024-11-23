@@ -22,7 +22,11 @@ const Chat = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [selectedChat, setSelectedChat] = useState(null);
 
-  useEffect(() => {
+ 
+  
+
+
+ useEffect(() => {
     // Redirect if not authenticated
     if (!user) {
       navigate('/login');

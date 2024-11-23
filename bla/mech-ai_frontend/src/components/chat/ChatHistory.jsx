@@ -1,7 +1,7 @@
 import React from 'react';
 import MessageBubble from './MessageBubble';
 
-const ChatHistory = ({ messages }) => {
+const ChatHistory = ({ messages = [], currentUserId }) => {
   // Group messages by date
   const groupMessagesByDate = (messages) => {
     const groups = {};

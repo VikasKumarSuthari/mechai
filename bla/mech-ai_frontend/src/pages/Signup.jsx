@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import axios from 'axios';
 
 const Signup = ({ onSignup }) => {
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ const Signup = ({ onSignup }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Basic validation
@@ -36,7 +37,8 @@ const Signup = ({ onSignup }) => {
 
     // Simulated signup logic
     if (formData.email && formData.password) {
-      onSignup && onSignup();
+      const response= await axios.post("http://localhost:8000/api/auth/register",formData);
+      alert(response.data.message);
     } else {
       setError('Invalid signup details');
     }

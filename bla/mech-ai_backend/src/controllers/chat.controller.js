@@ -1,5 +1,5 @@
-import Chat from '../models/ Chat.model.js';
-import User from '../models/User.model.js';
+import Chat from '../models/Chat.model.js';
+//import User from '../models/User.model.js';
 
 export const createChat = async (req, res) => {
   try {

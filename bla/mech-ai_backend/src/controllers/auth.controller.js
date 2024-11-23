@@ -4,11 +4,14 @@ import bcrypt from 'bcryptjs';
 
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
+    /*console.log(name);
+    console.log(email);
+    console.log(password);*/
 
     // Check if user already exists
     const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
+      $or: [{ email }, { username:name }] 
     });
 
     if (existingUser) {
@@ -23,7 +26,7 @@ export const registerUser = async (req, res) => {
 
     // Create new user
     const newUser = new User({
-      username,
+      username:name,
       email,
       password: hashedPassword
     });
@@ -34,6 +37,7 @@ export const registerUser = async (req, res) => {
     const token = generateToken(newUser._id);
 
     res.status(201).json({
+      message: 'Signup successful! Welcome to Mech AI.',
       _id: newUser._id,
       username: newUser.username,
       email: newUser.email,
@@ -50,6 +54,8 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    /*console.log(email);
+    console.log(password);*/
 
     // Find user by email
     const user = await User.findOne({ email });
@@ -73,9 +79,10 @@ export const loginUser = async (req, res) => {
     const token = generateToken(user._id);
 
     res.json({
+      message:"login sucessful",
       _id: user._id,
       username: user.username,
-      email: user.email,
+      email_id: user.email,
       token
     });
   } catch (error) {
