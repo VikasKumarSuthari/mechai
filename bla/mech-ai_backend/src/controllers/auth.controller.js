@@ -54,12 +54,12 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email);
-    console.log(password);
+    /*console.log(email);
+    console.log(password);*/
 
     // Find user by email
     const user = await User.findOne({ email });
-    console.log(user);
+    //console.log(user);
 
     if (!user) {
       return res.status(401).json({ 
