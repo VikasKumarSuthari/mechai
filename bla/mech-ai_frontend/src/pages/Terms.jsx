@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   CardContent, 
@@ -8,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const Terms = () => {
+  const navigate = useNavigate();
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
@@ -64,7 +66,7 @@ const Terms = () => {
       </Card>
 
       <div className="text-center mt-8">
-        <Button variant="outline">Contact Legal Team</Button>
+        <Button onClick={() => navigate('/contact')}  variant="outline">Contact Legal Team</Button>
       </div>
     </div>
   );
