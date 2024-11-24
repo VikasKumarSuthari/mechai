@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -7,15 +7,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import axios from 'axios';
 
 const Profile = () => {
-  const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    username: 'johndoe123'
-  });
-
+  const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [user,setUser]=useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,11 +22,64 @@ const Profile = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Here you would typically make an API call to save the profile
-    setIsEditing(false);
-  };
+  useEffect(() => {
+    const Storeddata = sessionStorage.getItem('user');
+    if (Storeddata) {
+      const userdata = JSON.parse(Storeddata);
+      setUser(userdata);
+    }
+  }, []);
 
+  useEffect(() => {
+    const getdata = async () => {
+      try {
+
+        if (user && user._id) {
+
+          const token = sessionStorage.getItem("token");
+          if (!token) {
+          console.error("Authentication token is missing.");
+          }
+
+
+          const response = await axios.get("http://localhost:8000/api/auth/profile", {
+            params: { _id: user._id },
+            headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          });
+          setProfile(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+    getdata();
+  }, [user]);
+
+
+
+  const handleSave = async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+   console.error("Authentication token is missing.");
+    }
+    try {
+      const response = await axios.put("http://localhost:8000/api/auth/profile", {
+        _id: user._id,
+        username: profile.username, 
+      }, {
+        headers: {
+           Authorization: `Bearer ${token}`, 
+        }
+     });
+      sessionStorage.setItem('user', JSON.stringify(response.data)); 
+      setIsEditing(false); 
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">User Profile</h1>
@@ -47,45 +97,46 @@ const Profile = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Name</label>
-              {isEditing ? (
-                <Input 
-                  name="name"
-                  value={profile.name}
-                  onChange={handleInputChange}
-                />
+              <label className="block text-sm font-medium mb-2">Username</label>
+              {profile ? (
+                isEditing ? (
+                  <Input 
+                    name="username"
+                    value={profile.username || ''}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <p>{profile.username || 'N/A'}</p>
+                )
               ) : (
-                <p>{profile.name}</p>
+                <p>Loading...</p>
               )}
             </div>
             
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>
-              {isEditing ? (
-                <Input 
-                  name="email"
-                  value={profile.email}
-                  onChange={handleInputChange}
-                />
-              ) : (
-                <p>{profile.email}</p>
+              {profile ? (
+                  <p>{profile.email || 'N/A'}</p>
+                ): (
+                <p>Loading...</p>
               )}
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-2">Username</label>
-              {isEditing ? (
-                <Input 
-                  name="username"
-                  value={profile.username}
-                  onChange={handleInputChange}
-                />
-              ) : (
-                <p>{profile.username}</p>
-              )}
+              <label className="block text-sm font-medium mb-2">Joined us on</label>
+              {profile ? (
+                <p>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                }) : 'N/A'}</p>
+                ) : (
+                <p>Loading...</p>
+                 )}
             </div>
+
 
             {isEditing && (
               <div className="mt-4">

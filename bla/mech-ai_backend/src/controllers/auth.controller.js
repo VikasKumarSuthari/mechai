@@ -83,7 +83,8 @@ export const loginUser = async (req, res) => {
       _id: user._id,
       username: user.username,
       email_id: user.email,
-      token
+      token,
+      date:createdAt
     });
   } catch (error) {
     res.status(500).json({ 
@@ -96,7 +97,10 @@ export const loginUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     // Authenticated user's ID from middleware
-    const user = await User.findById(req.user._id).select('-password');
+    const {_id}=req.query;
+    const user = await User.findById(_id).select('-password');
+    /*console.log(_id);
+    console.log(user);*/
 
     if (!user) {
       return res.status(404).json({ 
@@ -115,9 +119,11 @@ export const getUserProfile = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
   try {
-    const { username, email } = req.body;
+    const { username ,_id} = req.body;
+    /*console.log(username);
+    console.log(_id);*/
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(_id);
 
     if (!user) {
       return res.status(404).json({ 
@@ -127,14 +133,12 @@ export const updateUserProfile = async (req, res) => {
 
     // Update fields if provided
     if (username) user.username = username;
-    if (email) user.email = email;
 
     await user.save();
 
     res.json({
       _id: user._id,
-      username: user.username,
-      email: user.email
+      username: user.username
     });
   } catch (error) {
     res.status(500).json({ 

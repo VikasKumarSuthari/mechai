@@ -23,7 +23,7 @@ const Login = () => {
     const { message, _id, username, email_id, token } = response.data;
     alert(response.data.message);
     if (response.data.message==="login sucessful") {
-      sessionStorage.setItem('user', JSON.stringify({ _id, username, email_id }));
+      sessionStorage.setItem('user', JSON.stringify({ _id, username, email_id}));
       sessionStorage.setItem('token', token);
       navigate('/chat');
     } else {
