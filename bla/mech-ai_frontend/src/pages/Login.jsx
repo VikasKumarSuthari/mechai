@@ -20,10 +20,10 @@ const Login = () => {
       return;
     }
     const response=await axios.post("http://localhost:8000/api/auth/login",{email,password});
-    const { message, _id, username, email_id, token } = response.data;
+    const { message, _id, username, email_id, token ,date} = response.data;
     alert(response.data.message);
     if (response.data.message==="login sucessful") {
-      sessionStorage.setItem('user', JSON.stringify({ _id, username, email_id}));
+      sessionStorage.setItem('user', JSON.stringify({ _id, username, email_id,date}));
       sessionStorage.setItem('token', token);
       navigate('/chat');
     } else {
