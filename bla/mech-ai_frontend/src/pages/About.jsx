@@ -14,8 +14,20 @@ const AboutSection = ({ title, description, icon: Icon }) => (
   </Card>
 );
 
+
 const About = () => {
   const navigate = useNavigate();
+  const handlechat=async()=>
+    {
+      const storeduser=sessionStorage.getItem('user');
+      if(storeduser)
+      {
+        navigate("/chat");
+      }
+      else{
+        navigate("/login");
+      }
+    }
 
   const features = [
     {
@@ -52,7 +64,7 @@ const About = () => {
           intelligent, and meaningful conversations.
         </p>
         <Button 
-          onClick={() => navigate('/chat')}
+          onClick={handlechat}
           className="flex items-center gap-2"
         >
           Start Chatting <ArrowRight className="h-4 w-4" />
