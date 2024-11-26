@@ -6,6 +6,8 @@ import {
   ChevronDown, Star, Archive, Trash2, Pin
 } from 'lucide-react';
 
+import axios from 'axios';
+
 // Custom Dropdown Component
 const Dropdown = ({ trigger, children }) => {
   const [isOpen, setIsOpen] = useState(false);
