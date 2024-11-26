@@ -139,7 +139,7 @@ const Chat = () => {
     setIsTyping(true);
     setTimeout(() => setIsTyping(false), 2000);
     try {
-      const response = await axios.post('http://localhost:8000/api/chats/message', {
+      const response = await axios.post('http://localhost:8100/api/chat', {
         message: newMessage,
       });
   

@@ -116,11 +116,3 @@ export const deleteChat = async (req, res) => {
 };
 
 
-export const Modelresponse=async (req,res)=>
-{
-  const {message}=req.body;
-  const modelResponse = await axios.post('http://localhost:5001/model-endpoint', {
-    message,
-  });
-  res.json({reply:modelResponse.data});
-}
