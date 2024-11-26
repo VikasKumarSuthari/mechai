@@ -119,7 +119,7 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = (e) => {
+  const handleSend = async(e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
@@ -138,6 +138,25 @@ const Chat = () => {
     setNewMessage('');
     setIsTyping(true);
     setTimeout(() => setIsTyping(false), 2000);
+    try {
+      const response = await axios.post('http://localhost:8000/api/chats/message', {
+        message: newMessage,
+      });
+  
+    
+      const botMessage = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: response.data.reply, 
+        timestamp: new Date(),
+        reactions: [],
+        status: 'received',
+      };
+      setMessages((prev) => [...prev, botMessage]);
+    }catch (error) {
+        console.error('Error sending message:', error);
+        setNotification('Failed to send message. Please try again.');
+      }
   };
 
   const copyMessage = (content) => {

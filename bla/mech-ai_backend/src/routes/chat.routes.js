@@ -4,7 +4,8 @@ import {
   addMessageToChat,
   getUserChats,
   getChatById,
-  deleteChat
+  deleteChat,
+  Modelresponse
 } from '../controllers/chat.controller.js';
 import authMiddleware from '../middleware/auth.middleware.js';
 
@@ -16,5 +17,6 @@ router.post('/message', authMiddleware, addMessageToChat);
 router.get('/', authMiddleware, getUserChats);
 router.get('/:chatId', authMiddleware, getChatById);
 router.delete('/:chatId', authMiddleware, deleteChat);
+router.post("/modelresponse",authMiddleware,Modelresponse);
 
 export default router;
