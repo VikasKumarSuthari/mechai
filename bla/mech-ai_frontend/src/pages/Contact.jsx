@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, Phone, Mail, Send } from 'lucide-react';
+import axios from 'axios';
 
 const Contact = () => {
+
+  const [token,setToken]=useState("");
+  useEffect(()=>
+  {
+    const Storeddata=sessionStorage.getItem('token');
+    setToken(Storeddata);
+  },[]);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,15 +36,28 @@ const Contact = () => {
     e.preventDefault();
     setStatus({ type: 'info', message: 'Sending message...' });
     
+    
     try {
       // Here you would typically make an API call to your backend
       // await api.post('/contact', formData);
-      
+      const response=await axios.post("http://localhost:8000/api/users/contact",formData,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if(response.data.msg=="User created successfully. Check your email to confirm.")
+      {
+        alert(response.data.msg);
+        
+
+      }
       setStatus({
         type: 'success',
         message: 'Message sent successfully! We will get back to you soon.'
       });
       setFormData({ name: '', email: '', subject: '', message: '' });
+      
+      
     } catch (error) {
       setStatus({
         type: 'error',

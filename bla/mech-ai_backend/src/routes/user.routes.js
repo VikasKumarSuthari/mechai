@@ -3,7 +3,8 @@ import {
   getAllUsers,
   updatePassword,
   deleteUserAccount,
-  getUserStatistics
+  getUserStatistics,
+  contactService
 } from '../controllers/user.controller.js';
 import authMiddleware from '../middleware/auth.middleware.js';
 
@@ -14,5 +15,6 @@ router.get('/', authMiddleware, getAllUsers);
 router.put('/password', authMiddleware, updatePassword);
 router.delete('/account', authMiddleware, deleteUserAccount);
 router.get('/stats', authMiddleware, getUserStatistics);
+router.post('/contact',contactService);
 
 export default router;

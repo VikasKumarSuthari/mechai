@@ -17,4 +17,6 @@ router.get('/', authMiddleware, getUserChats);
 router.get('/:chatId', authMiddleware, getChatById);
 router.delete('/:chatId', authMiddleware, deleteChat);
 
+
+
 export default router;

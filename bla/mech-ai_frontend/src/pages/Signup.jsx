@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = ({ onSignup }) => {
+  const navigate=useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,6 +41,7 @@ const Signup = ({ onSignup }) => {
     if (formData.email && formData.password) {
       const response= await axios.post("http://localhost:8000/api/auth/register",formData);
       alert(response.data.message);
+      navigate("/login");
     } else {
       setError('Invalid signup details');
     }
