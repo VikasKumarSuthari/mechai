@@ -1,4 +1,5 @@
 import User from '../models/User.model.js';
+import  {Otp}  from '../models/Otp.model.js';
 import { generateToken } from '../utils/jwt.js';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
@@ -15,58 +16,54 @@ const transporter = nodemailer.createTransport({
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    /*console.log(name);
-    console.log(email);
-    console.log(password);*/
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username:name }] 
+    
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username: name }],
     });
 
-    if (existingUser) {
-      return res.status(400).json({ 
-        message: 'User already exists with this email or username' 
-      });
-    }
-
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
-    const newUser = new User({
-      username:name,
+   
+
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ message: "User already exists with this email or username" });
+    }
+
+   
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await Otp.create({
       email,
-      password: hashedPassword
+      otp,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 5 * 60 * 1000,
+      hashedPassword,
+      name,
+
     });
 
-    await newUser.save();
+    
     const mailOptions = {
       from: "mathiangelina0@gmail.com",
-      to: email, 
-      subject: "Signup Successful - Welcome to MechAI",
+      to: email,
+      subject: "Email Verification OTP - MechAI",
       html: `
         <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7;">
           <div style="max-width: 600px; margin: auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <h2 style="color: #6a0dad; text-align: center;">Welcome to MechAI</h2>
+            <h2 style="color: #6a0dad; text-align: center;">Verify Your Email</h2>
             <p style="font-size: 16px; color: #333333;">
               Hi <strong>${name}</strong>,
             </p>
             <p style="font-size: 16px; color: #555555;">
-              Thank you for signing up with MechAI! We are thrilled to have you onboard.
+              Your OTP for email verification is:
+              <strong style="font-size: 18px; color: #6a0dad;">${otp}</strong>
             </p>
             <p style="font-size: 16px; color: #555555;">
-              If you have any questions, feel free to reply to this email or contact our support team.
-            </p>
-            <div style="padding: 10px; background-color: #f9f9f9; border-left: 4px solid #6a0dad; margin: 20px 0; border-radius: 5px;">
-              <p style="font-size: 16px; color: #555555; margin: 0;">
-                Happy exploring!
-              </p>
-            </div>
-            <p style="font-size: 14px; color: #777777; text-align: center;">
-              Regards,<br>
-              The MechAI Team
+              Please enter this OTP within 5 minutes to complete your registration.
             </p>
           </div>
           <footer style="text-align: center; margin-top: 20px; padding: 10px; font-size: 12px; color: #888888;">
@@ -75,36 +72,25 @@ export const registerUser = async (req, res) => {
         </div>
       `,
     };
-    
-    
+
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ msg: "Error sending confirmation email" });
+        console.error("Error sending OTP email:", error);
+        return res.status(500).json({ message: "Error sending OTP email" });
       }
-      console.log('Email sent: ' + info.response);
-      res.status(201).json({ msg: "User created successfully. Check your email for confirmation." });
-    });
-    
-
-
-    // Generate JWT token
-    const token = generateToken(newUser._id);
-
-    res.status(201).json({
-      message: 'Signup successful! Welcome to Mech AI.',
-      _id: newUser._id,
-      username: newUser.username,
-      email: newUser.email,
-      token
+      console.log("OTP email sent: " + info.response);
+      res.status(200).json({
+        message: "OTP sent successfully. Please verify your email.",
+        email,
+      });
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: 'Server error during registration', 
-      error: error.message 
-    });
+    res
+      .status(500)
+      .json({ message: "Server error during OTP generation", error: error.message });
   }
 };
+
 
 export const loginUser = async (req, res) => {
   try {
@@ -201,5 +187,84 @@ export const updateUserProfile = async (req, res) => {
       message: 'Error updating profile', 
       error: error.message 
     });
+  }
+};
+
+
+export const verifyotp=async(req,res)=>
+{
+  try {
+    const { email, otp } = req.body;
+
+    const storedOtp = await Otp.findOne({ email, otp });
+
+    if (!storedOtp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+    if (Date.now() > storedOtp.expiresAt) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    res.status(200).json({ message: "OTP verified successfully. Proceed with registration." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Server error during OTP verification", error: error.message });
+  }
+}
+
+export const completeRegistration = async (req, res) => {
+  try {
+    const {email} = req.body;
+    console.log(email);
+    const otpEntry = await Otp.findOne({ email });
+    if (!otpEntry) {
+      return res.status(404).json({ message: "OTP entry not found. Registration not completed." });
+    }
+
+    const { name, hashedPassword } = otpEntry;
+
+    const mailOptions = {
+      from: "mathiangelina0@gmail.com",
+      to: email,
+      subject: "Signup Successful - Welcome to MechAI",
+      html: `
+        <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7;">
+          <div style="max-width: 600px; margin: auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #6a0dad; text-align: center;">Welcome to MechAI</h2>
+            <p style="font-size: 16px; color: #333333;">
+              Hi <strong>${name}</strong>,
+            </p>
+            <p style="font-size: 16px; color: #555555;">
+              Thank you for signing up with MechAI! We are thrilled to have you onboard.
+            </p>
+          </div>
+        </div>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ message: "Error sending confirmation email" });
+      }
+      console.log("Confirmation email sent: " + info.response);
+    });
+    
+
+    const newUser = new User({
+      username: name,
+      email,
+      password: hashedPassword, 
+    });
+
+    await newUser.save();
+    await Otp.deleteOne({ email });
+
+    res.status(201).json({message: "mail sent"});
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Server error during registration", error: error.message });
   }
 };

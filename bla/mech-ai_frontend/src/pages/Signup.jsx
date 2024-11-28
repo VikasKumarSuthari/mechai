@@ -41,7 +41,12 @@ const Signup = ({ onSignup }) => {
     if (formData.email && formData.password) {
       const response= await axios.post("http://localhost:8000/api/auth/register",formData);
       alert(response.data.message);
-      navigate("/login");
+      if(response.data.message==="OTP sent successfully. Please verify your email.")
+      {
+        sessionStorage.setItem("signupEmail", formData.email);
+        navigate("/otp-verification");
+      }
+      
     } else {
       setError('Invalid signup details');
     }
