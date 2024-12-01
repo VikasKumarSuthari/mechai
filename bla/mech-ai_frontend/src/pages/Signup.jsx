@@ -120,6 +120,7 @@ const Signup = ({ onSignup }) => {
                 <button 
                   type="button"
                   className="ml-1 text-blue-600 hover:underline"
+                  onClick={()=>navigate("/login")}
                 >
                   Login
                 </button>

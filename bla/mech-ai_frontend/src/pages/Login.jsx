@@ -19,7 +19,8 @@ const Login = () => {
       setError('Please enter both email and password');
       return;
     }
-    const response=await axios.post("http://localhost:8000/api/auth/login",{email,password});
+    try{
+      const response=await axios.post("http://localhost:8000/api/auth/login",{email,password});
     const { message, _id, username, email_id, token ,date} = response.data;
     alert(response.data.message);
     if (response.data.message==="login sucessful") {
@@ -28,6 +29,11 @@ const Login = () => {
       navigate('/chat');
     } else {
       setError('Invalid email or password');
+    }
+    }
+    catch(err)
+    {
+      alert("signup required");
     }
   };
 
