@@ -199,10 +199,7 @@ export const verifyotp=async(req,res)=>
     const storedOtp = await Otp.findOne({ email, otp });
 
     if (!storedOtp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
-    if (Date.now() > storedOtp.expiresAt) {
-      return res.status(400).json({ message: "OTP has expired" });
+      return res.status(400).json({ message: "OTP has expired or is invalid" });
     }
 
     res.status(200).json({ message: "OTP verified successfully. Proceed with registration." });
@@ -216,7 +213,7 @@ export const verifyotp=async(req,res)=>
 export const completeRegistration = async (req, res) => {
   try {
     const {email} = req.body;
-    console.log(email);
+    //console.log(email);
     const otpEntry = await Otp.findOne({ email });
     if (!otpEntry) {
       return res.status(404).json({ message: "OTP entry not found. Registration not completed." });

@@ -62,7 +62,8 @@ const handleSubmit = async (e) => {
       }
     } catch (error) {
       console.error("Error during OTP verification or registration:", error);
-      alert("An error occurred. Please try again.");
+      alert(error.response.data.message);
+      navigate("/signup")
     }
   };
   

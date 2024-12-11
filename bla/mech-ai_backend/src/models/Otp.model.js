@@ -8,6 +8,7 @@ const otpSchema = new mongoose.Schema({
   hashedPassword: { type: String, required: true },
   name:{ type: String, required: true },
 });
+otpSchema.index({ expiresAt: 5 * 60 * 1000 }, { expireAfterSeconds: 0 });
 
 export const Otp = mongoose.model("Otp", otpSchema);
 
