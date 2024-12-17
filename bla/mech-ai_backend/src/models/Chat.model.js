@@ -5,23 +5,24 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Message content is required'],
     trim: true,
-    maxlength: [1000, 'Message cannot exceed 1000 characters']
+    maxlength: [10000000, 'Message cannot exceed 1000 characters'],
   },
   sender: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: String,
+    enum: ['user', 'assistant'],
+    required: true,
   },
   timestamp: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'file'],
-    default: 'text'
-  }
+    enum: ['user', 'bot', 'system', 'assistant', 'text'],  // Include 'text' here
+    default: 'text',
+  },
 });
+
 
 const ChatSchema = new mongoose.Schema({
   user: {

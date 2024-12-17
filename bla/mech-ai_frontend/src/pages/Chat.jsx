@@ -166,6 +166,43 @@ const Chat = () => {
     setNotification('Message copied to clipboard');
   };
 
+  const handlenewchat = async () => {
+    // Retrieve the user and token from session storage
+    const user = sessionStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
+  
+    if (!user || !token) {
+      setNotification("User is not logged in. Please log in and try again.");
+      return;
+    }
+  
+    try {
+      const parsedUser = JSON.parse(user); // Parse the user object
+      const userId = parsedUser._id; // Extract the user ID
+  
+      console.log(messages);
+  
+      const response = await axios.post(
+        "http://localhost:8000/api/chats/savechat",
+        { messages, userId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("done");
+  
+      setNotification("Chat saved successfully!");
+      console.log("Response from server:", response.data);
+    } catch (error) {
+      console.error("Error saving chat:", error.response?.data || error.message);
+      setNotification("Failed to save chat. Please try again.");
+    }
+  };
+  
+  
+
   const formatRelativeTime = (date) => {
     const now = new Date();
     const diff = now - date;
@@ -211,7 +248,8 @@ const Chat = () => {
                 <h2 className="text-lg font-semibold">Chats</h2>
                 <button
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => { /* Handle new chat */ }}
+                  onClick={handlenewchat}
+                  
                 >
                   <Plus className="w-5 h-5" />
                 </button>

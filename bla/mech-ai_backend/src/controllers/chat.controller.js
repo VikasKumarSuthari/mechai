@@ -1,5 +1,6 @@
 import Chat from '../models/Chat.model.js';
-//import User from '../models/User.model.js';
+import User from '../models/User.model.js';
+
 
 export const createChat = async (req, res) => {
   try {
@@ -114,5 +115,63 @@ export const deleteChat = async (req, res) => {
     });
   }
 };
+
+const generateChatTitle = (messages) => {
+  if (!messages || messages.length === 0) return 'Untitled Chat';
+  
+  // Generate a title based on the first message
+  const firstMessage = messages[0].content;
+  const title = firstMessage.split(' ').slice(0, 5).join(' '); // First 5 words
+  return title || 'Untitled Chat';
+};
+
+
+export const savechats=async(req,res)=>
+{
+  try {
+    const { messages, userId } = req.body;
+
+    if (!messages || messages.length === 0) {
+      return res.status(400).json({ error: 'Messages are required' });
+    }
+
+    // Validate user existence
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Generate chat title
+    const chatTitle = generateChatTitle(messages);
+
+    // Calculate metadata
+    const totalMessages = messages.length;
+    const lastMessageAt = messages[messages.length - 1].timestamp || Date.now();
+
+    // Create a new Chat document
+    const newChat = new Chat({
+      user: userId,
+      messages: messages.map((msg) => ({
+        content: msg.content,
+        sender: msg.type,
+        timestamp: msg.timestamp || Date.now(),
+        type:'text',
+      })),
+      title: chatTitle,
+      metadata: {
+        totalMessages,
+        lastMessageAt,
+      },
+    });
+
+    // Save chat to the database
+    await newChat.save();
+
+    res.status(201).json({ message: 'Chat saved successfully', chat: newChat });
+  } catch (error) {
+    console.error('Error saving chat:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 
