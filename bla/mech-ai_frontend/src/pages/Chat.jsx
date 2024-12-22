@@ -225,22 +225,7 @@ const Chat = () => {
   
   
 
-  const formatRelativeTime = (updatedAt) => {
-    const currentDate = new Date();
-    const updatedDate = new Date(updatedAt);
-  
-    
-    const isSameDay = currentDate.toDateString() === updatedDate.toDateString();
-    if (isSameDay) {
-      return 'Today';
-    }
-  
-    
-    const timeDifferenceInMs = currentDate - updatedDate;
-    const differenceInDays = Math.floor(timeDifferenceInMs / (1000 * 3600 * 24));
-  
-    return `${differenceInDays} day${differenceInDays > 1 ? 's' : ''} ago`;
-  };
+ 
 
 
 
@@ -393,7 +378,7 @@ const Chat = () => {
                       </div>
                     </div>
                     <div className="ml-2 flex flex-col items-end">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatRelativeTime(chat.updatedAt)}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatTimeAgo(chat.updatedAt)}</span>
                       
                     </div>
                   </div>
