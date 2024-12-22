@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // Custom Dropdown Component
 const Dropdown = ({ trigger, children }) => {
@@ -58,7 +59,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      type: 'assistant',
+      sender: 'assistant',
       content: "Hello! I'm Claude. How can I help you today?",
       timestamp: new Date(),
       reactions: [],
@@ -77,41 +78,40 @@ const Chat = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatFilter, setChatFilter] = useState('all');
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
-  
+  const navigate=useNavigate();
   const messagesEndRef = useRef(null);
 
-  const [previousChats] = useState([
-    {
-      id: 1,
-      title: "Code Review Discussion",
-      lastMessage: "Here's the updated version with the changes you requested",
-      timestamp: new Date(2024, 10, 24, 14, 30),
-      unread: 2,
-      pinned: true,
-      starred: true,
-      category: 'work',
-    },
-    {
-      id: 2,
-      title: "Project Planning",
-      lastMessage: "Let's break down the tasks for next sprint",
-      timestamp: new Date(2024, 10, 24, 12, 15),
-      unread: 0,
-      pinned: true,
-      starred: false,
-      category: 'work',
-    },
-    {
-      id: 3,
-      title: "Writing Assistant",
-      lastMessage: "The essay has been revised with your suggestions",
-      timestamp: new Date(2024, 10, 23, 18, 45),
-      unread: 1,
-      pinned: false,
-      starred: true,
-      category: 'personal',
-    },
-  ]);
+  const [previousChats,setPreviouschats] = useState([]);
+  const token=sessionStorage.getItem('token');
+
+  useEffect(() => {
+    console.log('useEffect triggered');
+    const fetchUserAndChats = async () => {
+      console.log('Fetching user and chats...');
+      try {
+        const storedUser = sessionStorage.getItem('user');
+        if (storedUser) {
+          const userdata = JSON.parse(storedUser);
+          console.log('User data:', userdata);
+          const response = await axios.get(`http://localhost:8000/api/chats/getchats/${userdata._id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          console.log('Response data:', response.data);
+          setPreviouschats(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+      }
+    };
+  
+    if (token) {
+      fetchUserAndChats();
+    }
+  }, [token]);
+  
+  
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -129,7 +129,7 @@ const Chat = () => {
       ...prev,
       {
         id: Date.now(),
-        type: 'user',
+        sender: 'user',
         content: newMessage,
         timestamp: new Date(),
         reactions: [],
@@ -148,7 +148,7 @@ const Chat = () => {
     
       const botMessage = {
         id: Date.now() + 1,
-        type: 'assistant',
+        sender: 'assistant',
         content: response.data.reply, 
         timestamp: new Date(),
         reactions: [],
@@ -166,8 +166,10 @@ const Chat = () => {
     setNotification('Message copied to clipboard');
   };
 
+ 
+
+
   const handlenewchat = async () => {
-    // Retrieve the user and token from session storage
     const user = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
   
@@ -177,62 +179,152 @@ const Chat = () => {
     }
   
     try {
-      const parsedUser = JSON.parse(user); // Parse the user object
-      const userId = parsedUser._id; // Extract the user ID
+      const parsedUser = JSON.parse(user); 
+      const userId = parsedUser._id;
   
       console.log(messages);
   
-      const response = await axios.post(
-        "http://localhost:8000/api/chats/savechat",
-        { messages, userId },
+      let response;
+  
+      if (selectedChat) {
+        
+        response = await axios.put(
+          `http://localhost:8000/api/chats/updatechat/${selectedChat}`,
+          { messages },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setNotification("Chat updated successfully!");
+      } else {
+        
+        response = await axios.post(
+          "http://localhost:8000/api/chats/savechat",
+          { messages, userId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setNotification("New chat saved successfully!");
+      }
+  
+      console.log("Response from server:", response.data);
+  
+      
+      window.location.reload();
+    } catch (error) {
+      console.error("Error saving/updating chat:", error.response?.data || error.message);
+      setNotification("Failed to save/update chat. Please try again.");
+    }
+  };
+  
+  
+  
+
+  const formatRelativeTime = (updatedAt) => {
+    const currentDate = new Date();
+    const updatedDate = new Date(updatedAt);
+  
+    
+    const isSameDay = currentDate.toDateString() === updatedDate.toDateString();
+    if (isSameDay) {
+      return 'Today';
+    }
+  
+    
+    const timeDifferenceInMs = currentDate - updatedDate;
+    const differenceInDays = Math.floor(timeDifferenceInMs / (1000 * 3600 * 24));
+  
+    return `${differenceInDays} day${differenceInDays > 1 ? 's' : ''} ago`;
+  };
+
+
+
+  const filteredChats = previousChats
+    .filter(chat => {
+      const matchesSearch =
+        chat.title.toLowerCase().includes(sidebarSearchQuery.toLowerCase()) 
+      const matchesFilter =
+        chatFilter === 'all' ||
+        (chatFilter === 'starred' ) ||
+        (chatFilter === 'pinned' );
+
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      return b.tupdatedAt - a.updatedAt;
+    });
+
+
+
+    const handleselectedchat = async(chatId) => {
+      try{
+        
+      const response=await axios.get(`http://localhost:8000/api/chats/getchatbyid/${chatId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log("done");
-  
-      setNotification("Chat saved successfully!");
-      console.log("Response from server:", response.data);
-    } catch (error) {
-      console.error("Error saving chat:", error.response?.data || error.message);
-      setNotification("Failed to save chat. Please try again.");
-    }
-  };
-  
-  
+      console.log(response.data[0].messages);
+      setMessages(response.data[0].messages);
+      }
+      catch(error)
+      {
+        console.log("error occured",error);
+      }
 
-  const formatRelativeTime = (date) => {
-    const now = new Date();
-    const diff = now - date;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor(diff / (1000 * 60));
+    };
 
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
-    return 'Just now';
-  };
 
-  const filteredChats = previousChats
-    .filter(chat => {
-      const matchesSearch =
-        chat.title.toLowerCase().includes(sidebarSearchQuery.toLowerCase()) ||
-        chat.lastMessage.toLowerCase().includes(sidebarSearchQuery.toLowerCase());
-      const matchesFilter =
-        chatFilter === 'all' ||
-        (chatFilter === 'starred' && chat.starred) ||
-        (chatFilter === 'pinned' && chat.pinned);
 
-      return matchesSearch && matchesFilter;
-    })
-    .sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return b.timestamp - a.timestamp;
-    });
+    const formatTimeAgo = (timestamp) => {
+      const now = Date.now();
+    
+      // Convert ISO string to timestamp (milliseconds)
+      const time = new Date(timestamp).getTime();
+      
+      // If the timestamp is invalid, return 'Invalid Time'
+      if (isNaN(time)) {
+        console.error('Invalid timestamp:', timestamp);
+        return 'Invalid Time';
+      }
+    
+      const diff = now - time;
+    
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+      const months = Math.floor(days / 30);
+      const years = Math.floor(months / 12);
+    
+      if (seconds < 60) {
+        return `${seconds}s ago`;
+      } else if (minutes < 60) {
+        return `${minutes} min ago`;
+      } else if (hours < 24) {
+        return `${hours}h ago`;
+      } else if (days < 30) {
+        return `${days}d ago`;
+      } else if (months < 12) {
+        return `${months}mo ago`;
+      } else {
+        return `${years}y ago`;
+      }
+    };
+
+
+   
+    
+    
+    
+
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
@@ -285,26 +377,24 @@ const Chat = () => {
             <div className="flex-1 overflow-y-auto">
               {filteredChats.map((chat) => (
                 <div
-                  key={chat.id}
-                  onClick={() => setSelectedChat(chat.id)}
+                  key={chat._id}
+                  onClick={() => {
+                    setSelectedChat(chat._id);
+                    handleselectedchat(chat._id);
+                  }}
                   className={`p-3 border-b cursor-pointer ${isDarkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-100 hover:bg-gray-50'} ${selectedChat === chat.id ? (isDarkMode ? 'bg-gray-700' : 'bg-blue-50') : ''}`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        {chat.pinned && <Pin className="w-3 h-3 text-blue-500" />}
-                        {chat.starred && <Star className="w-3 h-3 text-yellow-500" fill="currentColor" />}
-                        <h3 className="text-sm font-medium truncate">{chat.title}</h3>
+                        { <Pin className="w-3 h-3 text-blue-500" />}
+                        {<Star className="w-3 h-3 text-yellow-500" fill="currentColor" /> }
+                        <h3 className="text-sm font-medium truncate">{chat.title || 'Untitled Chat'}</h3>
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">{chat.lastMessage}</p>
                     </div>
                     <div className="ml-2 flex flex-col items-end">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatRelativeTime(chat.timestamp)}</span>
-                      {chat.unread > 0 && (
-                        <span className="mt-1 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">
-                          {chat.unread}
-                        </span>
-                      )}
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatRelativeTime(chat.updatedAt)}</span>
+                      
                     </div>
                   </div>
                 </div>
@@ -341,11 +431,11 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto p-4">
           <div className="space-y-4">
             {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} space-x-3`}>
-                <div className={`max-w-xl ${message.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'} p-3 rounded-lg`}>
+              <div key={message._id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} space-x-3`}>
+                <div className={`max-w-xl ${message.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'} p-3 rounded-lg`}>
                   {message.content}
                   <div className="flex items-center space-x-2 mt-2 text-xs text-gray-400">
-                    <span>{formatRelativeTime(message.timestamp)}</span>
+                  <span>{formatTimeAgo(message.timestamp)}</span>
                     <button
                       className="hover:text-gray-700"
                       onClick={() => copyMessage(message.content)}

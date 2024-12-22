@@ -9,7 +9,7 @@ const MessageSchema = new mongoose.Schema({
   },
   sender: {
     type: String,
-    enum: ['user', 'assistant'],
+    enum: ['user', 'assistant', 'text'],
     required: true,
   },
   timestamp: {
@@ -18,7 +18,7 @@ const MessageSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['user', 'bot', 'system', 'assistant', 'text'],  // Include 'text' here
+    enum: ['user', 'bot', 'system', 'assistant', 'text'],  
     default: 'text',
   },
 });
@@ -37,6 +37,14 @@ const ChatSchema = new mongoose.Schema({
     default: 'New Chat'
   },
   isArchived: {
+    type: Boolean,
+    default: false
+  },
+  pinned: {
+    type: Boolean,
+    default: false
+  },
+  started: {
     type: Boolean,
     default: false
   },

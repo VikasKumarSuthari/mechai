@@ -73,12 +73,9 @@ export const getUserChats = async (req, res) => {
 export const getChatById = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const userId = req.user._id;
-
-    const chat = await Chat.findOne({ 
-      _id: chatId, 
-      user: userId 
-    }).populate('user', 'username email');
+    //console.log(chatId);
+    const chat=await Chat.find({_id: chatId});
+    //console.log(chat);
 
     if (!chat) {
       return res.status(404).json({ message: 'Chat not found' });
@@ -135,25 +132,25 @@ export const savechats=async(req,res)=>
       return res.status(400).json({ error: 'Messages are required' });
     }
 
-    // Validate user existence
+   
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Generate chat title
+    
     const chatTitle = generateChatTitle(messages);
 
-    // Calculate metadata
+    
     const totalMessages = messages.length;
     const lastMessageAt = messages[messages.length - 1].timestamp || Date.now();
 
-    // Create a new Chat document
+    
     const newChat = new Chat({
       user: userId,
       messages: messages.map((msg) => ({
         content: msg.content,
-        sender: msg.type,
+        sender: msg.sender,
         timestamp: msg.timestamp || Date.now(),
         type:'text',
       })),
@@ -164,13 +161,46 @@ export const savechats=async(req,res)=>
       },
     });
 
-    // Save chat to the database
+    
     await newChat.save();
 
     res.status(201).json({ message: 'Chat saved successfully', chat: newChat });
   } catch (error) {
     console.error('Error saving chat:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+export const getChats=async(req,res)=>
+{
+  try {
+    const userId = req.params.id;
+    //console.log(userId);
+
+    const chats = await Chat.find({user: userId});
+    //console.log(chats);
+
+    if (!chats) {
+      return res.status(404).json({ message: 'No chats found' });
+    }
+
+    res.status(200).json(chats);
+  } catch (error) {
+    console.error('Error fetching chats:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+export const updatechat=async(req,res)=>
+{
+  const { chatId } = req.params;
+  const { messages } = req.body;
+  try {
+    const updatedChat = await Chat.findByIdAndUpdate(chatId, { messages ,updatedAt: new Date() }, { new: true });
+    res.status(200).json(updatedChat);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update chat' });
   }
 }
 
