@@ -19,6 +19,8 @@ import Signup from './pages/Signup';
 import Chat from './pages/Chat';
 import Testimonials from './pages/Testimonials';
 import OtpVerification from './pages/OtpVerification';
+import ForgotPassword from './pages/ForgotPassword';
+import Setpassword from './pages/Setpassword';
 
 function App() {
   return (
@@ -46,6 +48,8 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/testimonials" element={<Testimonials/>}/>
           <Route path="/otp-verification" element={<OtpVerification/>}/>
+          <Route path="/forgot-password" element={<ForgotPassword/>}/>
+          <Route path="/set-password/:token" element={<Setpassword/>}/>
         </Routes>
       </div>
 

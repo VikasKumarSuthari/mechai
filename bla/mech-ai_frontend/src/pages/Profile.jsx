@@ -8,11 +8,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [user,setUser]=useState(null);
+  const navigate = useNavigate(); 
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +27,11 @@ const Profile = () => {
 
   useEffect(() => {
     const Storeddata = sessionStorage.getItem('user');
-    if (Storeddata) {
+    
+    if (!Storeddata) {
+        navigate('/login');
+    } 
+    else{
       const userdata = JSON.parse(Storeddata);
       setUser(userdata);
     }

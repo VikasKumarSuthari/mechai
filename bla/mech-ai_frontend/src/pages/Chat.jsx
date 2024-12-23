@@ -80,7 +80,6 @@ const Chat = () => {
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
   const navigate=useNavigate();
   const messagesEndRef = useRef(null);
-
   const [previousChats,setPreviouschats] = useState([]);
   const token=sessionStorage.getItem('token');
 
@@ -110,6 +109,58 @@ const Chat = () => {
       fetchUserAndChats();
     }
   }, [token]);
+
+
+  const handlePin = async (chatId, currentPinStatus) => {
+    try {
+      const newPinStatus = !currentPinStatus;
+      const response = await axios.post(
+        `http://localhost:8000/api/chats/updatePinStatus/${chatId}`,
+        { pinned: newPinStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setPreviouschats(prevChats =>
+          prevChats.map(chat =>
+            chat._id === chatId ? { ...chat, pinned: newPinStatus } : chat
+          )
+        );
+        console.log("Pinned status updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating pin status:", error);
+    }
+  };
+  
+  const handleStar = async (chatId, currentStarStatus) => {
+    try {
+      const newStarStatus = !currentStarStatus;
+      const response = await axios.post(
+        `http://localhost:8000/api/chats/updateStarStatus/${chatId}`,
+        { starred: newStarStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setPreviouschats(prevChats =>
+          prevChats.map(chat =>
+            chat._id === chatId ? { ...chat, starred: newStarStatus } : chat
+          )
+        );
+        console.log("Star status updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating star status:", error);
+    }
+  };
+  
   
   
 
@@ -225,24 +276,20 @@ const Chat = () => {
   
   
 
- 
-
-
-
   const filteredChats = previousChats
-    .filter(chat => {
-      const matchesSearch =
-        chat.title.toLowerCase().includes(sidebarSearchQuery.toLowerCase()) 
-      const matchesFilter =
-        chatFilter === 'all' ||
-        (chatFilter === 'starred' ) ||
-        (chatFilter === 'pinned' );
+  .filter(chat => {
+    const matchesSearch = chat.title.toLowerCase().includes(sidebarSearchQuery.toLowerCase());
+    
+    const matchesFilter =
+      chatFilter === 'all' || 
+      (chatFilter === 'starred' && chat.started) || 
+      (chatFilter === 'pinned' && chat.pinned);
 
-      return matchesSearch && matchesFilter;
-    })
-    .sort((a, b) => {
-      return b.tupdatedAt - a.updatedAt;
-    });
+    return matchesSearch && matchesFilter;
+  })
+  .sort((a, b) => {
+    return b.updatedAt - a.updatedAt;
+  });
 
 
 
@@ -372,8 +419,8 @@ const Chat = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        { <Pin className="w-3 h-3 text-blue-500" />}
-                        {<Star className="w-3 h-3 text-yellow-500" fill="currentColor" /> }
+                        { <Pin className="w-3 h-3 text-blue-500" onClick={() => handlePin(chat._id)}/>}
+                        {<Star className="w-3 h-3 text-yellow-500" fill="currentColor" onClick={()=>handleStar(chat._id)}/> }
                         <h3 className="text-sm font-medium truncate">{chat.title || 'Untitled Chat'}</h3>
                       </div>
                     </div>

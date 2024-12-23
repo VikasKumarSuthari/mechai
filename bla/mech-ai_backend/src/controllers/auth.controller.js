@@ -3,7 +3,7 @@ import  {Otp}  from '../models/Otp.model.js';
 import { generateToken } from '../utils/jwt.js';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
-
+import jwt from 'jsonwebtoken';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -265,3 +265,88 @@ export const completeRegistration = async (req, res) => {
       .json({ message: "Server error during registration", error: error.message });
   }
 };
+
+
+export const forgotpassword=async(req,res)=>
+{
+    const { email} = req.body;
+
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+        const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const setPasswordLink = `http://localhost:5173/set-password/${token}`;
+
+        const mailOptions = {
+            from: "mathiangelina0@gmail.com",
+            to: email,  
+            subject: 'Set Your New Password',
+            html: `
+                <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7;">
+                    <div style="max-width: 600px; margin: auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                        <h1 style="color: #6a0dad; text-align: center;">Set Your New Password</h1>
+                        <p style="font-size: 16px; color: #333333;">
+                            Hello <strong>${user.username}</strong>,<br>
+                            We received a request to change your password. Please click the link below to set your new password.
+                        </p>
+                        <a href="${setPasswordLink}" style="display: inline-block; margin: 20px auto; padding: 10px 20px; background-color: #6a0dad; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Set New Password</a>
+                        <p style="font-size: 14px; color: #777777; text-align: center;">
+                            If you did not request this change, please ignore this email.
+                        </p>
+                    </div>
+                    <footer style="text-align: center; margin-top: 20px; padding: 10px; font-size: 12px; color: #888888;">
+                        &copy; ${new Date().getFullYear()} Kathavachak. All rights reserved.
+                    </footer>
+                </div>
+            `,
+        };
+
+        await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error("Error sending email:", error);
+                return res.status(500).json({ msg: "Error sending set password email" });
+            }
+            console.log('Email sent: ' + info.response);
+        });
+
+        res.status(200).json({ msg: "Password change request received. A link to set your new password has been sent to your email." });
+    } catch (error) {
+        console.error("Error processing password change request", error);
+        res.status(500).json({ msg: "Server error" });
+    }
+
+
+}
+
+export const setpassword=async(req,res)=>
+{
+  const { token, password, confirm } = req.body;
+
+  if (password !== confirm) {
+    return res.status(400).json({ msg: "Passwords do not match" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const email = decoded.email;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ msg: "Password has been updated successfully" });
+  } catch (error) {
+    console.error("Error setting password:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+}

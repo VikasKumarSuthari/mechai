@@ -6,6 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@langchain/core": "^0.3.26",
+    "@langchain/groq": "^0.1.2",
     "@types/express": "^5.0.0",
     "@types/mongoose": "^5.11.97",
     "bcryptjs": "^2.4.3",

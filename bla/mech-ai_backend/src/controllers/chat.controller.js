@@ -1,6 +1,48 @@
+
 import Chat from '../models/Chat.model.js';
 import User from '../models/User.model.js';
+/*import { ChatGroq } from '@langchain/groq';
+//import { LLMChain } from 'langchain/chains';
+import { PromptTemplate } from '@langchain/core/prompts';
 
+const generateChatTitle = async (messages) => {
+  if (!messages || messages.length === 0) return 'Untitled Chat';
+
+  // Preprocess messages (e.g., selecting first few messages for context)
+  const selectedMessages = messages.slice(0, 3).map((msg) => msg.content).join('\n');
+
+  // Define the template for the prompt
+  const promptTemplate = `Generate a concise, meaningful title for the following conversation:\n{messages}`;
+
+  // Initialize the LangChain prompt
+  const prompt = new PromptTemplate({
+    template: promptTemplate,
+    inputVariables: ['messages'],
+  });
+
+  // Initialize the ChatGroq model from langchain_groq
+  const model = new ChatGroq({
+    apiKey: "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", // Replace with your ChatGroq API key
+    temperature: 0.7,
+    maxTokens: 10,
+  });
+
+  
+
+  try {
+    // Execute the chain to generate the title
+    const response = await chain.call({
+      messages: selectedMessages,
+    });
+
+    // Extract the title from the response
+    const title = response.text.trim();
+    return title || 'Untitled Chat';
+  } catch (error) {
+    console.error('Error generating title with ChatGroq:', error);
+    return 'Untitled Chat';
+  }
+};*/
 
 export const createChat = async (req, res) => {
   try {
@@ -123,6 +165,7 @@ const generateChatTitle = (messages) => {
 };
 
 
+
 export const savechats=async(req,res)=>
 {
   try {
@@ -204,4 +247,52 @@ export const updatechat=async(req,res)=>
   }
 }
 
+
+
+export const updatepinstatus = async (req, res) => {
+  const { chatId } = req.params;  
+  const { pinned } = req.body; 
+  //console.log(chatId);
+  
+  try {
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId, 
+      { pinned },  
+      { new: true } 
+    );
+    
+    if (!updatedChat) {
+      return res.status(404).send({ success: false, message: "Chat not found" });
+    }
+    
+    res.status(200).send({ success: true, pinned, updatedChat });
+  } catch (error) {
+    console.error("Error updating pin status:", error);
+    res.status(500).send({ success: false, message: "Server error" });
+  }
+};
+
+
+export const updatestarstatus = async (req, res) => {
+  const { chatId } = req.params;
+  const { starred } = req.body;  
+  //console.log(chatId);
+  
+  try {
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId, 
+      { started: starred },  
+      { new: true } 
+    );
+    
+    if (!updatedChat) {
+      return res.status(404).send({ success: false, message: "Chat not found" });
+    }
+    
+    res.status(200).send({ success: true, starred, updatedChat });  
+  } catch (error) {
+    console.error("Error updating star status:", error);
+    res.status(500).send({ success: false, message: "Server error" });
+  }
+};
 

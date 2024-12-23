@@ -8,6 +8,8 @@ import {
   savechats,
   getChats,
   updatechat,
+  updatepinstatus,
+  updatestarstatus
 } from '../controllers/chat.controller.js';
 import authMiddleware from '../middleware/auth.middleware.js';
 
@@ -22,6 +24,8 @@ router.delete('/:chatId', authMiddleware, deleteChat);
 router.post("/savechat",authMiddleware,savechats);
 router.get("/getchats/:id",authMiddleware,getChats);
 router.put("/updatechat/:chatId",authMiddleware,updatechat);
+router.post("/updatePinStatus/:chatId",authMiddleware,updatepinstatus);
+router.post("/updateStarStatus/:chatId",authMiddleware,updatestarstatus);
 
 
 
