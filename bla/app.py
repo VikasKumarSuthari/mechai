@@ -1,8 +1,6 @@
 from flask import Flask, jsonify, request
-#from langchain_ollama import ChatOllama
 from flask_cors import CORS
 from langchain_groq import ChatGroq
-#from langchain_ollama import ChatOllama
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -14,9 +12,11 @@ CORS(app, resources={
     }
 })
 
-# Initialize the LLaMA model with Ollama
-#llm = ChatOllama(model="llama3.2:3b", temperature=0.35)
-llm=ChatGroq(groq_api_key="")
+# Add the required `model` parameter
+llm = ChatGroq(
+    groq_api_key="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",
+    model="llama3-8b-8192"  # or another available model from Groq
+)
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -27,18 +27,13 @@ def chat():
         if not user_message:
             return jsonify({"error": "No message provided"}), 400
         
-        # Use llm.chat to get the response from the LLM using the user message
         response = llm.invoke(user_message)
-        
-
-        # Extract the content from the AIMessage object
         ai_response = response.content if hasattr(response, 'content') else str(response)
+        print(ai_response)
 
         return jsonify({"reply": ai_response}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=8100)
