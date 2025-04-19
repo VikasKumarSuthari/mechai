@@ -109,8 +109,8 @@ export const getUserStatistics = async (req, res) => {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-      user: 'mathiangelina0@gmail.com',
-      pass: 'jynxheyhigybbdkf'
+      user: 'vikaskumarsuthari@gmail.com',
+      pass: 'mnhwezsxzydqeapt'
     },
 });
 
@@ -120,7 +120,7 @@ export const contactService=async(req,res)=>
   const { name, email, subject, message } = req.body;
   const mailOptions = {
     from: email,
-    to: "mathiangelina0@gmail.com",
+    to: "vikaskumarsuthari@gmail.com",
     subject: subject,
     html:  `
     <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7;">

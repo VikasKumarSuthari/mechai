@@ -7,8 +7,8 @@ import jwt from 'jsonwebtoken';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-      user: 'mathiangelina0@gmail.com',
-      pass: 'jynxheyhigybbdkf'
+      user: 'vikaskumarsuthari@gmail.com',
+      pass: 'mnhwezsxzydqeapt'
     },
 });
 
@@ -48,7 +48,7 @@ export const registerUser = async (req, res) => {
 
     
     const mailOptions = {
-      from: "mathiangelina0@gmail.com",
+      from: "vikaskumarsuthari@gmail.com",
       to: email,
       subject: "Email Verification OTP - MechAI",
       html: `
@@ -222,7 +222,7 @@ export const completeRegistration = async (req, res) => {
     const { name, hashedPassword } = otpEntry;
 
     const mailOptions = {
-      from: "mathiangelina0@gmail.com",
+      from: "vikaskumarsuthari@gmail.com",
       to: email,
       subject: "Signup Successful - Welcome to MechAI",
       html: `
@@ -282,7 +282,7 @@ export const forgotpassword=async(req,res)=>
         const setPasswordLink = `http://localhost:5173/set-password/${token}`;
 
         const mailOptions = {
-            from: "mathiangelina0@gmail.com",
+            from: "vikaskumarsuthari@gmail.com",
             to: email,  
             subject: 'Set Your New Password',
             html: `
