@@ -7,8 +7,8 @@ import jwt from 'jsonwebtoken';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-      user: 'vikaskumarsuthari@gmail.com',
-      pass: 'mnhwezsxzydqeapt'
+      user: 'mathiangelina0@gmail.com',
+      pass: 'gqyvsovpnfmfqofa'
     },
 });
 
@@ -48,7 +48,7 @@ export const registerUser = async (req, res) => {
 
     
     const mailOptions = {
-      from: "vikaskumarsuthari@gmail.com",
+      from: "mathiangelina0@gmail.com",
       to: email,
       subject: "Email Verification OTP - MechAI",
       html: `
@@ -110,7 +110,7 @@ export const loginUser = async (req, res) => {
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
-
+    //console.log(isMatch);
     if (!isMatch) {
       return res.status(401).json({ 
         message: 'Invalid credentials' 
@@ -119,6 +119,7 @@ export const loginUser = async (req, res) => {
 
     // Generate JWT token
     const token = generateToken(user._id);
+    console.log(token);
 
     res.json({
       message:"login sucessful",
@@ -222,7 +223,7 @@ export const completeRegistration = async (req, res) => {
     const { name, hashedPassword } = otpEntry;
 
     const mailOptions = {
-      from: "vikaskumarsuthari@gmail.com",
+      from: "mathiangelina0@gmail.com",
       to: email,
       subject: "Signup Successful - Welcome to MechAI",
       html: `
@@ -282,7 +283,7 @@ export const forgotpassword=async(req,res)=>
         const setPasswordLink = `http://localhost:5173/set-password/${token}`;
 
         const mailOptions = {
-            from: "vikaskumarsuthari@gmail.com",
+            from: "mathiangelina0@gmail.com",
             to: email,  
             subject: 'Set Your New Password',
             html: `
